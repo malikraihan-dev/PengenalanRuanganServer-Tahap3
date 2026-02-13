@@ -1,0 +1,897 @@
+<!DOCTYPE html>
+<html lang="id" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registrasi Wajah - Face Recognition</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4F46E5;
+            --primary-light: #EEF2FF;
+            --primary-hover: #4338CA;
+            --success: #10B981;
+            --success-light: #ECFDF5;
+            --warning: #F59E0B;
+            --warning-light: #FFFBEB;
+            --danger: #EF4444;
+            --danger-light: #FEF2F2;
+            --gray-50: #F9FAFB;
+            --gray-100: #F3F4F6;
+            --gray-200: #E5E7EB;
+            --gray-300: #D1D5DB;
+            --gray-400: #9CA3AF;
+            --gray-500: #6B7280;
+            --gray-600: #4B5563;
+            --gray-700: #374151;
+            --gray-800: #1F2937;
+            --gray-900: #111827;
+            --white: #FFFFFF;
+            --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+            --shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
+            --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
+            --radius: 12px;
+            --radius-lg: 16px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--gray-50);
+            min-height: 100vh;
+            color: var(--gray-800);
+        }
+
+        /* ===== NAVBAR ===== */
+        .navbar {
+            background: var(--white);
+            padding: 0 32px;
+            height: 64px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--gray-200);
+            box-shadow: var(--shadow-sm);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .navbar-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .navbar-brand .icon {
+            width: 36px;
+            height: 36px;
+            background: var(--primary);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+        .navbar-brand h1 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--gray-900);
+        }
+        .navbar-brand h1 span {
+            color: var(--primary);
+        }
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .nav-links a {
+            color: var(--gray-500);
+            text-decoration: none;
+            padding: 8px 16px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+        .nav-links a:hover {
+            color: var(--gray-700);
+            background: var(--gray-100);
+        }
+        .nav-links a.active {
+            color: var(--primary);
+            background: var(--primary-light);
+        }
+
+        /* ===== LAYOUT ===== */
+        .container {
+            max-width: 1320px;
+            margin: 0 auto;
+            padding: 28px 32px;
+        }
+        .page-header {
+            margin-bottom: 28px;
+        }
+        .page-header h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--gray-900);
+            margin-bottom: 6px;
+        }
+        .page-header p {
+            color: var(--gray-500);
+            font-size: 0.9rem;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+        @media (max-width: 960px) {
+            .grid { grid-template-columns: 1fr; }
+        }
+
+        /* ===== CARD ===== */
+        .card {
+            background: var(--white);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            border: 1px solid var(--gray-200);
+            box-shadow: var(--shadow-sm);
+        }
+        .card + .card {
+            margin-top: 20px;
+        }
+        .card-title {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--gray-900);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .card-title .icon-badge {
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+        .card-title .icon-badge.purple { background: var(--primary-light); }
+        .card-title .icon-badge.green  { background: var(--success-light); }
+        .card-title .icon-badge.orange { background: var(--warning-light); }
+
+        /* ===== FORM ===== */
+        .form-group { margin-bottom: 16px; }
+        .form-group label {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: var(--gray-600);
+            margin-bottom: 6px;
+        }
+        .form-group select,
+        .form-group input {
+            width: 100%;
+            padding: 10px 14px;
+            background: var(--white);
+            border: 1px solid var(--gray-300);
+            border-radius: 8px;
+            color: var(--gray-800);
+            font-size: 0.875rem;
+            outline: none;
+            font-family: inherit;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .form-group select:focus,
+        .form-group input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(79,70,229,0.12);
+        }
+
+        /* ===== VIDEO ===== */
+        .video-container {
+            position: relative;
+            width: 100%;
+            border-radius: var(--radius);
+            overflow: hidden;
+            background: var(--gray-900);
+            aspect-ratio: 4/3;
+        }
+        .video-container video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+        .video-container canvas#overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* ===== BUTTONS ===== */
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 600;
+            font-family: inherit;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .btn-primary { background: var(--primary); color: var(--white); }
+        .btn-primary:hover { background: var(--primary-hover); box-shadow: var(--shadow-md); }
+        .btn-success { background: var(--success); color: var(--white); }
+        .btn-success:hover { background: #059669; }
+        .btn-danger { background: var(--danger); color: var(--white); }
+        .btn-danger:hover { background: #DC2626; }
+        .btn-outline { background: var(--white); color: var(--gray-700); border: 1px solid var(--gray-300); }
+        .btn-outline:hover { background: var(--gray-50); border-color: var(--gray-400); }
+        .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+        .btn-group { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 16px; }
+
+        /* ===== STATUS BAR ===== */
+        .status-bar {
+            background: var(--gray-50);
+            border-radius: 10px;
+            padding: 12px 16px;
+            margin-bottom: 16px;
+            border: 1px solid var(--gray-200);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .status-bar .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--gray-400);
+            flex-shrink: 0;
+        }
+        .status-bar.success .status-dot { background: var(--success); }
+        .status-bar.error .status-dot   { background: var(--danger); }
+        .status-bar.warning .status-dot  { background: var(--warning); animation: blink 1.5s infinite; }
+        @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+        .status-text {
+            font-size: 0.8rem;
+            color: var(--gray-600);
+            flex: 1;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: var(--gray-200);
+            border-radius: 2px;
+            margin-top: 6px;
+            overflow: hidden;
+        }
+        .progress-bar .fill {
+            height: 100%;
+            background: var(--primary);
+            border-radius: 2px;
+            transition: width 0.4s ease;
+        }
+
+        /* ===== CAPTURED IMAGES ===== */
+        .captured-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+            gap: 8px;
+            margin-top: 12px;
+        }
+        .captured-item {
+            position: relative;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 2px solid var(--gray-200);
+            transition: border-color 0.2s;
+        }
+        .captured-item:hover { border-color: var(--primary); }
+        .captured-item img {
+            width: 100%;
+            height: 90px;
+            object-fit: cover;
+            display: block;
+        }
+        .captured-item .remove-btn {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            background: var(--danger);
+            color: var(--white);
+            border: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 11px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        .captured-item:hover .remove-btn { opacity: 1; }
+
+        /* ===== DATA TABLE ===== */
+        .table-wrapper {
+            overflow-x: auto;
+        }
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .data-table th {
+            background: var(--gray-50);
+            color: var(--gray-500);
+            padding: 10px 14px;
+            text-align: left;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            border-bottom: 1px solid var(--gray-200);
+        }
+        .data-table td {
+            padding: 10px 14px;
+            border-bottom: 1px solid var(--gray-100);
+            font-size: 0.85rem;
+            color: var(--gray-700);
+        }
+        .data-table tr:hover { background: var(--gray-50); }
+
+        .badge {
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: inline-block;
+        }
+        .badge-success { background: var(--success-light); color: var(--success); }
+        .badge-warning { background: var(--warning-light); color: var(--warning); }
+        .badge-danger  { background: var(--danger-light);  color: var(--danger);  }
+
+        /* ===== INSTRUCTION STEPS ===== */
+        .steps {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .step {
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+            padding: 12px;
+            background: var(--gray-50);
+            border-radius: 10px;
+        }
+        .step-num {
+            background: var(--primary);
+            color: var(--white);
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.75rem;
+            flex-shrink: 0;
+        }
+        .step-text {
+            font-size: 0.85rem;
+            color: var(--gray-600);
+            line-height: 1.5;
+        }
+        .step-text strong { color: var(--gray-800); }
+
+        /* ===== TIPS ===== */
+        .tips-box {
+            background: var(--primary-light);
+            border-radius: var(--radius);
+            padding: 20px;
+            margin-top: 20px;
+        }
+        .tips-box h4 {
+            color: var(--primary);
+            font-size: 0.9rem;
+            margin-bottom: 12px;
+        }
+        .tips-box ul { list-style: none; padding: 0; }
+        .tips-box li {
+            padding: 5px 0 5px 24px;
+            color: var(--gray-600);
+            font-size: 0.83rem;
+            position: relative;
+            line-height: 1.5;
+        }
+        .tips-box li::before {
+            content: "\2726";
+            position: absolute;
+            left: 4px;
+            color: var(--primary);
+        }
+
+        /* ===== EMPTY STATE ===== */
+        .empty-state {
+            text-align: center;
+            color: var(--gray-400);
+            font-size: 0.85rem;
+            padding: 24px;
+        }
+
+        /* ===== TOAST ===== */
+        .toast-container {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            z-index: 9999;
+        }
+        .toast {
+            background: var(--white);
+            border-radius: 10px;
+            padding: 14px 18px;
+            margin-bottom: 10px;
+            min-width: 300px;
+            box-shadow: var(--shadow-lg);
+            border-left: 4px solid var(--primary);
+            animation: slideIn 0.3s ease;
+            font-size: 0.85rem;
+            color: var(--gray-700);
+        }
+        .toast.success { border-left-color: var(--success); }
+        .toast.error   { border-left-color: var(--danger);  }
+        @keyframes slideIn {
+            from { transform: translateX(120%); opacity: 0; }
+            to   { transform: translateX(0);    opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ===== NAVBAR ===== -->
+<nav class="navbar">
+    <div class="navbar-brand">
+        <div class="icon">&#127919;</div>
+        <h1>Face <span>AI</span></h1>
+    </div>
+    <div class="nav-links">
+        <a href="/">Dashboard</a>
+        <a href="/face-register" class="active">Registrasi Wajah</a>
+        <a href="/face-absensi">Absensi Wajah</a>
+    </div>
+</nav>
+
+<!-- TOAST -->
+<div class="toast-container" id="toastContainer"></div>
+
+<div class="container">
+    <div class="page-header">
+        <h2>Registrasi Wajah</h2>
+        <p>Rekam beberapa foto wajah untuk melatih model AI mengenali anggota</p>
+    </div>
+
+    <div class="grid">
+        <!-- ===== LEFT COLUMN ===== -->
+        <div>
+            <!-- Camera Card -->
+            <div class="card">
+                <div class="card-title">
+                    <span class="icon-badge purple">&#128249;</span> Kamera Webcam
+                </div>
+
+                <div class="form-group">
+                    <label>Pilih Anggota (NIM)</label>
+                    <select id="nimSelect" onchange="onAnggotaSelect()">
+                        <option value="">-- Pilih Anggota --</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Nama Lengkap</label>
+                    <input type="text" id="namaInput" readonly placeholder="Nama otomatis dari pilihan">
+                </div>
+
+                <!-- Status Bar -->
+                <div class="status-bar" id="statusBar">
+                    <div class="status-dot"></div>
+                    <span class="status-text" id="statusText">Memuat model face-api.js...</span>
+                </div>
+                <div class="progress-bar"><div class="fill" id="progressFill" style="width: 0%"></div></div>
+
+                <!-- Video -->
+                <div class="video-container" style="margin-top: 14px;">
+                    <video id="video" autoplay muted playsinline></video>
+                    <canvas id="overlay"></canvas>
+                </div>
+
+                <div class="btn-group">
+                    <button class="btn btn-primary" id="btnCapture" onclick="captureFrame()" disabled>
+                        &#128248; Ambil Foto
+                    </button>
+                    <button class="btn btn-success" id="btnSaveAll" onclick="saveAllToServer()" disabled>
+                        &#128190; Simpan ke Server
+                    </button>
+                    <button class="btn btn-outline" id="btnClearAll" onclick="clearAllCaptures()">
+                        &#128465; Hapus Semua
+                    </button>
+                </div>
+            </div>
+
+            <!-- Captured Photos Card -->
+            <div class="card">
+                <div class="card-title">
+                    <span class="icon-badge green">&#128247;</span>
+                    Foto Tertangkap (<span id="captureCount">0</span>/10)
+                </div>
+                <p style="color: var(--gray-400); font-size: 0.8rem; margin-top: -12px; margin-bottom: 8px;">
+                    Minimal 3 foto, disarankan 5-10 dengan variasi ekspresi dan sudut
+                </p>
+                <div class="captured-grid" id="capturedGrid">
+                    <p class="empty-state" style="grid-column: 1/-1;">Belum ada foto. Klik "Ambil Foto" untuk mulai.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== RIGHT COLUMN ===== -->
+        <div>
+            <!-- Instructions Card -->
+            <div class="card">
+                <div class="card-title">
+                    <span class="icon-badge purple">&#128203;</span> Cara Registrasi
+                </div>
+                <div class="steps">
+                    <div class="step">
+                        <div class="step-num">1</div>
+                        <div class="step-text"><strong>Pilih anggota</strong> dari dropdown NIM di sebelah kiri.</div>
+                    </div>
+                    <div class="step">
+                        <div class="step-num">2</div>
+                        <div class="step-text"><strong>Izinkan kamera.</strong> Browser akan meminta izin akses webcam.</div>
+                    </div>
+                    <div class="step">
+                        <div class="step-num">3</div>
+                        <div class="step-text"><strong>Posisikan wajah</strong> di depan kamera dengan pencahayaan yang cukup.</div>
+                    </div>
+                    <div class="step">
+                        <div class="step-num">4</div>
+                        <div class="step-text"><strong>Ambil 5-10 foto</strong> dengan variasi ekspresi (tersenyum, serius, miring kiri/kanan).</div>
+                    </div>
+                    <div class="step">
+                        <div class="step-num">5</div>
+                        <div class="step-text"><strong>Simpan ke Server</strong> untuk melatih sistem mengenali wajah tersebut.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tips Box -->
+            <div class="tips-box">
+                <h4>&#10024; Tips Akurasi Maksimal</h4>
+                <ul>
+                    <li>Gunakan pencahayaan merata, hindari backlight.</li>
+                    <li>Ambil foto dengan berbagai ekspresi wajah.</li>
+                    <li>Sedikit miring ke kiri dan kanan (&#177;15&#176;).</li>
+                    <li>Lepas kacamata hitam / masker jika memungkinkan.</li>
+                    <li>Semakin banyak foto, semakin akurat pengenalan.</li>
+                </ul>
+            </div>
+
+            <!-- Registered Data Card -->
+            <div class="card">
+                <div class="card-title">
+                    <span class="icon-badge orange">&#128202;</span> Data Wajah Terdaftar
+                </div>
+                <div class="table-wrapper">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>NIM</th>
+                                <th>Nama</th>
+                                <th>Foto</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="registeredTable">
+                            <tr><td colspan="4" class="empty-state">Memuat data...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- face-api.js -->
+<script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api/dist/face-api.js"></script>
+
+<script>
+    const MODEL_URL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model';
+    const MAX_CAPTURES = 10;
+    const MIN_CAPTURES = 3;
+
+    let modelsLoaded = false;
+    let capturedData = [];
+    let videoStream = null;
+
+    window.addEventListener('DOMContentLoaded', async () => {
+        await loadModels();
+        await startCamera();
+        await loadAnggotaList();
+        await loadRegisteredData();
+    });
+
+    async function loadModels() {
+        updateStatus('Memuat model SSD MobileNet...', 10, 'warning');
+        try {
+            await faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL);
+            updateStatus('Memuat model Face Landmark...', 40, 'warning');
+            await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL);
+            updateStatus('Memuat model Face Recognition...', 70, 'warning');
+            await faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL);
+            updateStatus('Semua model berhasil dimuat!', 100, 'success');
+            modelsLoaded = true;
+            document.getElementById('btnCapture').disabled = false;
+        } catch (err) {
+            updateStatus('Gagal memuat model: ' + err.message, 0, 'error');
+        }
+    }
+
+    async function startCamera() {
+        try {
+            const video = document.getElementById('video');
+            videoStream = await navigator.mediaDevices.getUserMedia({
+                video: { width: 640, height: 480, facingMode: 'user' }
+            });
+            video.srcObject = videoStream;
+            video.addEventListener('play', () => {
+                const overlay = document.getElementById('overlay');
+                overlay.width = video.videoWidth;
+                overlay.height = video.videoHeight;
+                detectFaceLoop();
+            });
+        } catch (err) {
+            updateStatus('Gagal akses kamera: ' + err.message, 0, 'error');
+        }
+    }
+
+    async function detectFaceLoop() {
+        if (!modelsLoaded) {
+            requestAnimationFrame(detectFaceLoop);
+            return;
+        }
+        const video = document.getElementById('video');
+        const overlay = document.getElementById('overlay');
+        const ctx = overlay.getContext('2d');
+        const detections = await faceapi.detectAllFaces(video).withFaceLandmarks();
+
+        ctx.clearRect(0, 0, overlay.width, overlay.height);
+        detections.forEach(det => {
+            const box = det.detection.box;
+            ctx.strokeStyle = '#4F46E5';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([6, 4]);
+            ctx.strokeRect(box.x, box.y, box.width, box.height);
+            ctx.setLineDash([]);
+            det.landmarks.positions.forEach(pt => {
+                ctx.fillStyle = '#10B981';
+                ctx.beginPath();
+                ctx.arc(pt.x, pt.y, 1.5, 0, Math.PI * 2);
+                ctx.fill();
+            });
+        });
+        requestAnimationFrame(detectFaceLoop);
+    }
+
+    async function captureFrame() {
+        if (!modelsLoaded) return;
+        if (capturedData.length >= MAX_CAPTURES) {
+            showToast('Sudah mencapai batas ' + MAX_CAPTURES + ' foto!', 'error');
+            return;
+        }
+        const nim = document.getElementById('nimSelect').value;
+        const nama = document.getElementById('namaInput').value;
+        if (!nim || !nama) {
+            showToast('Silakan pilih anggota terlebih dahulu!', 'error');
+            return;
+        }
+
+        updateStatus('Mendeteksi dan mengekstrak wajah...', 50, 'warning');
+        const video = document.getElementById('video');
+        const detection = await faceapi.detectSingleFace(video)
+            .withFaceLandmarks()
+            .withFaceDescriptor();
+
+        if (!detection) {
+            updateStatus('Wajah tidak terdeteksi! Pastikan wajah terlihat jelas.', 0, 'error');
+            showToast('Wajah tidak terdeteksi!', 'error');
+            return;
+        }
+
+        const canvas = document.createElement('canvas');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        canvas.getContext('2d').drawImage(video, 0, 0);
+        const imageData = canvas.toDataURL('image/jpeg', 0.8);
+        const descriptorArray = Array.from(detection.descriptor);
+
+        capturedData.push({ imageData, descriptor: descriptorArray });
+        updateCapturedGrid();
+        updateStatus('Foto ' + capturedData.length + '/' + MAX_CAPTURES + ' berhasil!', 100, 'success');
+        showToast('Foto berhasil ditangkap! (' + capturedData.length + '/' + MAX_CAPTURES + ')', 'success');
+        document.getElementById('btnSaveAll').disabled = capturedData.length < MIN_CAPTURES;
+    }
+
+    function updateCapturedGrid() {
+        const grid = document.getElementById('capturedGrid');
+        document.getElementById('captureCount').textContent = capturedData.length;
+        if (capturedData.length === 0) {
+            grid.innerHTML = '<p class="empty-state" style="grid-column:1/-1;">Belum ada foto. Klik "Ambil Foto" untuk mulai.</p>';
+            return;
+        }
+        grid.innerHTML = capturedData.map((item, idx) =>
+            '<div class="captured-item">' +
+                '<img src="' + item.imageData + '" alt="Foto ' + (idx + 1) + '">' +
+                '<button class="remove-btn" onclick="removeCapture(' + idx + ')">&#215;</button>' +
+            '</div>'
+        ).join('');
+    }
+
+    function removeCapture(idx) {
+        capturedData.splice(idx, 1);
+        updateCapturedGrid();
+        document.getElementById('btnSaveAll').disabled = capturedData.length < MIN_CAPTURES;
+    }
+
+    function clearAllCaptures() {
+        capturedData = [];
+        updateCapturedGrid();
+        document.getElementById('btnSaveAll').disabled = true;
+        showToast('Semua foto dihapus', 'success');
+    }
+
+    async function saveAllToServer() {
+        const nim = document.getElementById('nimSelect').value;
+        const nama = document.getElementById('namaInput').value;
+        if (!nim || !nama) {
+            showToast('Pilih anggota terlebih dahulu!', 'error');
+            return;
+        }
+        if (capturedData.length < MIN_CAPTURES) {
+            showToast('Minimal ' + MIN_CAPTURES + ' foto diperlukan!', 'error');
+            return;
+        }
+
+        document.getElementById('btnSaveAll').disabled = true;
+        updateStatus('Menyimpan data ke server...', 30, 'warning');
+
+        let successCount = 0;
+        for (let i = 0; i < capturedData.length; i++) {
+            try {
+                const payload = {
+                    nim: nim,
+                    label: nama,
+                    faceDescriptor: JSON.stringify(capturedData[i].descriptor),
+                    imageData: capturedData[i].imageData
+                };
+                const res = await fetch('/api/face/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if (res.ok) {
+                    successCount++;
+                    updateStatus('Menyimpan foto ' + (i + 1) + '/' + capturedData.length + '...',
+                        Math.round(((i + 1) / capturedData.length) * 100), 'warning');
+                }
+            } catch (err) {
+                console.error('Error saving:', err);
+            }
+        }
+
+        if (successCount > 0) {
+            updateStatus(successCount + ' foto wajah berhasil disimpan!', 100, 'success');
+            showToast(successCount + ' foto wajah berhasil disimpan untuk ' + nama + '!', 'success');
+            capturedData = [];
+            updateCapturedGrid();
+            await loadRegisteredData();
+        } else {
+            updateStatus('Gagal menyimpan data wajah!', 0, 'error');
+            showToast('Gagal menyimpan data wajah!', 'error');
+        }
+        document.getElementById('btnSaveAll').disabled = true;
+    }
+
+    async function loadAnggotaList() {
+        try {
+            const res = await fetch('/rest/anggota');
+            const data = await res.json();
+            const select = document.getElementById('nimSelect');
+            data.forEach(a => {
+                const opt = document.createElement('option');
+                opt.value = a.nim;
+                opt.textContent = a.nim + ' - ' + a.namaLengkap;
+                opt.dataset.nama = a.namaLengkap;
+                select.appendChild(opt);
+            });
+        } catch (err) {
+            console.error('Error loading anggota:', err);
+        }
+    }
+
+    function onAnggotaSelect() {
+        const select = document.getElementById('nimSelect');
+        const selected = select.options[select.selectedIndex];
+        document.getElementById('namaInput').value = selected.dataset.nama || '';
+    }
+
+    async function loadRegisteredData() {
+        try {
+            const res = await fetch('/api/face/all');
+            const data = await res.json();
+            const grouped = {};
+            data.forEach(fd => {
+                if (!grouped[fd.nim]) grouped[fd.nim] = { nim: fd.nim, label: fd.label, count: 0 };
+                grouped[fd.nim].count++;
+            });
+            const tbody = document.getElementById('registeredTable');
+            const entries = Object.values(grouped);
+            if (entries.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="empty-state">Belum ada data wajah terdaftar</td></tr>';
+                return;
+            }
+            tbody.innerHTML = entries.map(e => {
+                const bc = e.count >= 5 ? 'badge-success' : (e.count >= 3 ? 'badge-warning' : 'badge-danger');
+                const bt = e.count >= 5 ? 'Bagus' : (e.count >= 3 ? 'Cukup' : 'Kurang');
+                return '<tr>' +
+                    '<td style="font-weight:500;">' + e.nim + '</td>' +
+                    '<td>' + e.label + '</td>' +
+                    '<td><span class="badge ' + bc + '">' + e.count + ' foto &middot; ' + bt + '</span></td>' +
+                    '<td><button class="btn btn-danger" style="padding:5px 10px;font-size:0.75rem;" onclick="deleteAllFaces(\'' + e.nim + '\')">Hapus</button></td>' +
+                '</tr>';
+            }).join('');
+        } catch (err) {
+            console.error('Error:', err);
+        }
+    }
+
+    async function deleteAllFaces(nim) {
+        if (!confirm('Hapus semua data wajah NIM ' + nim + '?')) return;
+        try {
+            await fetch('/api/face/nim/' + nim, { method: 'DELETE' });
+            showToast('Data wajah berhasil dihapus!', 'success');
+            await loadRegisteredData();
+        } catch (err) {
+            showToast('Gagal menghapus: ' + err.message, 'error');
+        }
+    }
+
+    function updateStatus(text, progress, type) {
+        const bar = document.getElementById('statusBar');
+        document.getElementById('statusText').textContent = text;
+        document.getElementById('progressFill').style.width = progress + '%';
+        bar.className = 'status-bar';
+        if (type) bar.classList.add(type);
+    }
+
+    function showToast(message, type) {
+        type = type || 'success';
+        const container = document.getElementById('toastContainer');
+        const toast = document.createElement('div');
+        toast.className = 'toast ' + type;
+        toast.textContent = message;
+        container.appendChild(toast);
+        setTimeout(function() { toast.remove(); }, 4000);
+    }
+</script>
+</body>
+</html>

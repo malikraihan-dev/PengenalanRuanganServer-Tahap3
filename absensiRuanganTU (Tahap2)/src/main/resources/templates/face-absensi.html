@@ -1,0 +1,883 @@
+<!DOCTYPE html>
+<html lang="id" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Absensi Wajah AI - Face Recognition</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4F46E5;
+            --primary-light: #EEF2FF;
+            --primary-hover: #4338CA;
+            --success: #10B981;
+            --success-light: #ECFDF5;
+            --warning: #F59E0B;
+            --warning-light: #FFFBEB;
+            --danger: #EF4444;
+            --danger-light: #FEF2F2;
+            --gray-50: #F9FAFB;
+            --gray-100: #F3F4F6;
+            --gray-200: #E5E7EB;
+            --gray-300: #D1D5DB;
+            --gray-400: #9CA3AF;
+            --gray-500: #6B7280;
+            --gray-600: #4B5563;
+            --gray-700: #374151;
+            --gray-800: #1F2937;
+            --gray-900: #111827;
+            --white: #FFFFFF;
+            --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+            --shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
+            --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
+            --radius: 12px;
+            --radius-lg: 16px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--gray-50);
+            min-height: 100vh;
+            color: var(--gray-800);
+        }
+
+        /* ===== NAVBAR ===== */
+        .navbar {
+            background: var(--white);
+            padding: 0 32px;
+            height: 64px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--gray-200);
+            box-shadow: var(--shadow-sm);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .navbar-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .navbar-brand .icon {
+            width: 36px;
+            height: 36px;
+            background: var(--primary);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+        .navbar-brand h1 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--gray-900);
+        }
+        .navbar-brand h1 span { color: var(--primary); }
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .nav-links a {
+            color: var(--gray-500);
+            text-decoration: none;
+            padding: 8px 16px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+        .nav-links a:hover {
+            color: var(--gray-700);
+            background: var(--gray-100);
+        }
+        .nav-links a.active {
+            color: var(--primary);
+            background: var(--primary-light);
+        }
+
+        /* ===== LAYOUT ===== */
+        .container {
+            max-width: 1320px;
+            margin: 0 auto;
+            padding: 28px 32px;
+        }
+        .page-header {
+            margin-bottom: 28px;
+        }
+        .page-header h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--gray-900);
+            margin-bottom: 6px;
+        }
+        .page-header p {
+            color: var(--gray-500);
+            font-size: 0.9rem;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: 1.2fr 0.8fr;
+            gap: 24px;
+        }
+        @media (max-width: 960px) {
+            .grid { grid-template-columns: 1fr; }
+        }
+
+        /* ===== CARD ===== */
+        .card {
+            background: var(--white);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            border: 1px solid var(--gray-200);
+            box-shadow: var(--shadow-sm);
+        }
+        .card + .card { margin-top: 20px; }
+        .card-title {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--gray-900);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .card-title .icon-badge {
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+        .card-title .icon-badge.purple { background: var(--primary-light); }
+        .card-title .icon-badge.green  { background: var(--success-light); }
+        .card-title .icon-badge.orange { background: var(--warning-light); }
+        .card-title .icon-badge.red    { background: var(--danger-light); }
+
+        /* ===== VIDEO ===== */
+        .video-wrapper {
+            position: relative;
+            width: 100%;
+            border-radius: var(--radius);
+            overflow: hidden;
+            background: var(--gray-900);
+            aspect-ratio: 4/3;
+        }
+        .video-wrapper video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+        .video-wrapper canvas#overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* ===== RESULT OVERLAY ===== */
+        .result-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(transparent, rgba(0,0,0,0.85));
+            padding: 40px 20px 20px;
+            color: var(--white);
+            display: none;
+            animation: fadeUp 0.3s ease;
+        }
+        .result-overlay.show { display: block; }
+        @keyframes fadeUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to   { transform: translateY(0);    opacity: 1; }
+        }
+        .result-overlay .result-name {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+        .result-overlay .result-info {
+            font-size: 0.85rem;
+            opacity: 0.85;
+            margin-bottom: 8px;
+        }
+        .result-overlay .result-confidence {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(255,255,255,0.15);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            backdrop-filter: blur(4px);
+        }
+        .success-badge {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            background: var(--success);
+            color: var(--white);
+            padding: 8px 16px;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            box-shadow: var(--shadow-md);
+            display: none;
+            animation: popIn 0.3s ease;
+        }
+        .success-badge.show { display: block; }
+        @keyframes popIn {
+            0%   { transform: scale(0.5); opacity: 0; }
+            80%  { transform: scale(1.1); }
+            100% { transform: scale(1);   opacity: 1; }
+        }
+
+        /* ===== BUTTONS ===== */
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 600;
+            font-family: inherit;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .btn-primary { background: var(--primary); color: var(--white); }
+        .btn-primary:hover { background: var(--primary-hover); box-shadow: var(--shadow-md); }
+        .btn-success { background: var(--success); color: var(--white); }
+        .btn-success:hover { background: #059669; }
+        .btn-danger { background: var(--danger); color: var(--white); }
+        .btn-danger:hover { background: #DC2626; }
+        .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+        .btn-group { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 16px; }
+
+        /* ===== STATUS BAR ===== */
+        .status-bar {
+            background: var(--gray-50);
+            border-radius: 10px;
+            padding: 12px 16px;
+            margin-bottom: 16px;
+            border: 1px solid var(--gray-200);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .status-bar .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--gray-400);
+            flex-shrink: 0;
+        }
+        .status-bar.success .status-dot { background: var(--success); }
+        .status-bar.error .status-dot   { background: var(--danger);  }
+        .status-bar.warning .status-dot  { background: var(--warning); animation: blink 1.5s infinite; }
+        @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+        .status-text {
+            font-size: 0.8rem;
+            color: var(--gray-600);
+            flex: 1;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: var(--gray-200);
+            border-radius: 2px;
+            margin-top: 6px;
+            overflow: hidden;
+        }
+        .progress-bar .fill {
+            height: 100%;
+            background: var(--primary);
+            border-radius: 2px;
+            transition: width 0.4s ease;
+        }
+
+        /* ===== STAT CARDS ===== */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        .stat-card {
+            background: var(--gray-50);
+            border-radius: var(--radius);
+            padding: 16px;
+            border: 1px solid var(--gray-200);
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--gray-900);
+        }
+        .stat-value.primary { color: var(--primary); }
+        .stat-value.success { color: var(--success); }
+        .stat-value.warning { color: var(--warning); }
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--gray-500);
+            font-weight: 500;
+            margin-top: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        /* ===== SLIDER / THRESHOLD ===== */
+        .slider-group {
+            margin-bottom: 16px;
+        }
+        .slider-group label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: var(--gray-600);
+            margin-bottom: 8px;
+        }
+        .slider-group label span { color: var(--primary); font-weight: 700; }
+        .slider-group input[type="range"] {
+            width: 100%;
+            height: 6px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: var(--gray-200);
+            border-radius: 3px;
+            outline: none;
+        }
+        .slider-group input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: var(--primary);
+            cursor: pointer;
+            box-shadow: var(--shadow);
+        }
+
+        /* ===== DATA TABLE ===== */
+        .table-wrapper { overflow-x: auto; }
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .data-table th {
+            background: var(--gray-50);
+            color: var(--gray-500);
+            padding: 10px 14px;
+            text-align: left;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            border-bottom: 1px solid var(--gray-200);
+        }
+        .data-table td {
+            padding: 10px 14px;
+            border-bottom: 1px solid var(--gray-100);
+            font-size: 0.85rem;
+            color: var(--gray-700);
+        }
+        .data-table tr:hover { background: var(--gray-50); }
+        .badge {
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: inline-block;
+        }
+        .badge-success { background: var(--success-light); color: var(--success); }
+        .badge-warning { background: var(--warning-light); color: var(--warning); }
+        .badge-danger  { background: var(--danger-light);  color: var(--danger);  }
+
+        /* ===== LIVE INDICATOR ===== */
+        .live-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .live-indicator.active {
+            background: var(--danger-light);
+            color: var(--danger);
+        }
+        .live-indicator.active::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            background: var(--danger);
+            border-radius: 50%;
+            animation: blink 1s infinite;
+        }
+        .live-indicator.inactive {
+            background: var(--gray-100);
+            color: var(--gray-400);
+        }
+
+        /* ===== EMPTY STATE ===== */
+        .empty-state {
+            text-align: center;
+            color: var(--gray-400);
+            font-size: 0.85rem;
+            padding: 24px;
+        }
+
+        /* ===== TOAST ===== */
+        .toast-container {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            z-index: 9999;
+        }
+        .toast {
+            background: var(--white);
+            border-radius: 10px;
+            padding: 14px 18px;
+            margin-bottom: 10px;
+            min-width: 300px;
+            box-shadow: var(--shadow-lg);
+            border-left: 4px solid var(--primary);
+            animation: slideIn 0.3s ease;
+            font-size: 0.85rem;
+            color: var(--gray-700);
+        }
+        .toast.success { border-left-color: var(--success); }
+        .toast.error   { border-left-color: var(--danger);  }
+        @keyframes slideIn {
+            from { transform: translateX(120%); opacity: 0; }
+            to   { transform: translateX(0);    opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ===== NAVBAR ===== -->
+<nav class="navbar">
+    <div class="navbar-brand">
+        <div class="icon">&#127919;</div>
+        <h1>Face <span>AI</span></h1>
+    </div>
+    <div class="nav-links">
+        <a href="/">Dashboard</a>
+        <a href="/face-register">Registrasi Wajah</a>
+        <a href="/face-absensi" class="active">Absensi Wajah</a>
+    </div>
+</nav>
+
+<!-- TOAST -->
+<div class="toast-container" id="toastContainer"></div>
+
+<div class="container">
+    <div class="page-header">
+        <h2>Absensi Wajah AI</h2>
+        <p>Pengenalan wajah real-time untuk pencatatan kehadiran secara otomatis</p>
+    </div>
+
+    <div class="grid">
+        <!-- ===== LEFT COLUMN ===== -->
+        <div>
+            <!-- Camera Card -->
+            <div class="card">
+                <div class="card-title" style="justify-content: space-between;">
+                    <div style="display:flex;align-items:center;gap:8px;">
+                        <span class="icon-badge purple">&#129302;</span> Kamera Pengenalan
+                    </div>
+                    <span class="live-indicator inactive" id="liveIndicator">Standby</span>
+                </div>
+
+                <!-- Status Bar -->
+                <div class="status-bar" id="statusBar">
+                    <div class="status-dot"></div>
+                    <span class="status-text" id="statusText">Memuat model face-api.js...</span>
+                </div>
+                <div class="progress-bar"><div class="fill" id="progressFill" style="width: 0%"></div></div>
+
+                <!-- Video -->
+                <div class="video-wrapper" style="margin-top: 14px;">
+                    <video id="video" autoplay muted playsinline></video>
+                    <canvas id="overlay"></canvas>
+                    <div class="result-overlay" id="resultOverlay">
+                        <div class="result-name" id="resultName">-</div>
+                        <div class="result-info" id="resultInfo">-</div>
+                        <div class="result-confidence" id="resultConfidence">0%</div>
+                    </div>
+                    <div class="success-badge" id="successBadge">&#10003; Absensi Tercatat</div>
+                </div>
+
+                <div class="btn-group">
+                    <button class="btn btn-success" id="btnStartRecognition" onclick="toggleRecognition()" disabled>
+                        &#9654; Mulai Pengenalan
+                    </button>
+                </div>
+            </div>
+
+            <!-- Settings Card -->
+            <div class="card">
+                <div class="card-title">
+                    <span class="icon-badge orange">&#9881;</span> Pengaturan
+                </div>
+                <div class="slider-group">
+                    <label>
+                        Threshold Pengenalan
+                        <span id="thresholdValue">0.6</span>
+                    </label>
+                    <input type="range" id="thresholdSlider" min="0.3" max="0.9" step="0.05" value="0.6"
+                           oninput="document.getElementById('thresholdValue').textContent = this.value">
+                </div>
+                <p style="color: var(--gray-400); font-size: 0.78rem; line-height: 1.5;">
+                    Nilai lebih rendah = lebih mudah mengenali (tapi bisa salah). Nilai lebih tinggi = lebih ketat dan akurat.
+                    Rekomendasi: <strong style="color: var(--primary);">0.5 - 0.65</strong>
+                </p>
+            </div>
+        </div>
+
+        <!-- ===== RIGHT COLUMN ===== -->
+        <div>
+            <!-- Stats Cards -->
+            <div class="card">
+                <div class="card-title">
+                    <span class="icon-badge green">&#128202;</span> Statistik
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value primary" id="statTrained">0</div>
+                        <div class="stat-label">Wajah Terlatih</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value success" id="statToday">0</div>
+                        <div class="stat-label">Absensi Hari Ini</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value warning" id="statAccuracy">-%</div>
+                        <div class="stat-label">Avg Confidence</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="statStatus">Offline</div>
+                        <div class="stat-label">Status Sistem</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Log Card -->
+            <div class="card">
+                <div class="card-title">
+                    <span class="icon-badge red">&#128220;</span> Log Absensi Real-time
+                </div>
+                <div class="table-wrapper">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Waktu</th>
+                                <th>Nama</th>
+                                <th>Confidence</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="logTable">
+                            <tr><td colspan="4" class="empty-state">Belum ada log. Mulai pengenalan untuk memulai absensi.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- face-api.js -->
+<script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api/dist/face-api.js"></script>
+
+<script>
+    const MODEL_URL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model';
+
+    let modelsLoaded = false;
+    let recognitionActive = false;
+    let faceMatcher = null;
+    let recognitionLogs = [];
+    let lastRecognizedNim = null;
+    let cooldownTimer = null;
+    let todayAbsensiCount = 0;
+
+    window.addEventListener('DOMContentLoaded', async () => {
+        await loadModels();
+        await startCamera();
+        await loadTrainingData();
+    });
+
+    async function loadModels() {
+        updateStatus('Memuat model SSD MobileNet...', 10, 'warning');
+        try {
+            await faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL);
+            updateStatus('Memuat model Face Landmark...', 40, 'warning');
+            await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL);
+            updateStatus('Memuat model Face Recognition...', 70, 'warning');
+            await faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL);
+            updateStatus('Semua model berhasil dimuat!', 100, 'success');
+            modelsLoaded = true;
+        } catch (err) {
+            updateStatus('Gagal memuat model: ' + err.message, 0, 'error');
+        }
+    }
+
+    async function startCamera() {
+        try {
+            const video = document.getElementById('video');
+            const stream = await navigator.mediaDevices.getUserMedia({
+                video: { width: 640, height: 480, facingMode: 'user' }
+            });
+            video.srcObject = stream;
+            video.addEventListener('play', () => {
+                const overlay = document.getElementById('overlay');
+                overlay.width = video.videoWidth;
+                overlay.height = video.videoHeight;
+            });
+        } catch (err) {
+            updateStatus('Gagal akses kamera: ' + err.message, 0, 'error');
+        }
+    }
+
+    async function loadTrainingData() {
+        updateStatus('Memuat data training wajah...', 50, 'warning');
+        try {
+            const res = await fetch('/api/face/all');
+            const data = await res.json();
+
+            if (data.length === 0) {
+                updateStatus('Belum ada data wajah terdaftar. Silakan registrasi terlebih dahulu.', 0, 'error');
+                document.getElementById('statTrained').textContent = '0';
+                return;
+            }
+
+            const grouped = {};
+            data.forEach(fd => {
+                if (!grouped[fd.nim]) grouped[fd.nim] = { nim: fd.nim, label: fd.label, descriptors: [] };
+                try {
+                    const desc = JSON.parse(fd.faceDescriptor);
+                    grouped[fd.nim].descriptors.push(new Float32Array(desc));
+                } catch (e) { console.error('Parse error:', e); }
+            });
+
+            const labeledDescriptors = Object.values(grouped)
+                .filter(g => g.descriptors.length > 0)
+                .map(g => new faceapi.LabeledFaceDescriptors(g.nim + '|' + g.label, g.descriptors));
+
+            if (labeledDescriptors.length === 0) {
+                updateStatus('Data training kosong atau invalid!', 0, 'error');
+                return;
+            }
+
+            const threshold = parseFloat(document.getElementById('thresholdSlider').value);
+            faceMatcher = new faceapi.FaceMatcher(labeledDescriptors, threshold);
+
+            document.getElementById('statTrained').textContent = labeledDescriptors.length;
+            document.getElementById('btnStartRecognition').disabled = false;
+            updateStatus('Data training dimuat! ' + labeledDescriptors.length + ' wajah siap dikenali.', 100, 'success');
+            document.getElementById('statStatus').textContent = 'Ready';
+            document.getElementById('statStatus').style.color = 'var(--success)';
+        } catch (err) {
+            updateStatus('Gagal memuat data training: ' + err.message, 0, 'error');
+        }
+    }
+
+    function toggleRecognition() {
+        if (!modelsLoaded || !faceMatcher) return;
+        recognitionActive = !recognitionActive;
+        const btn = document.getElementById('btnStartRecognition');
+        const liveInd = document.getElementById('liveIndicator');
+
+        if (recognitionActive) {
+            // re-create matcher with current threshold
+            const threshold = parseFloat(document.getElementById('thresholdSlider').value);
+            const oldDescriptors = faceMatcher._labeledDescriptors || faceMatcher.labeledDescriptors;
+            faceMatcher = new faceapi.FaceMatcher(oldDescriptors, threshold);
+
+            btn.innerHTML = '&#9724; Berhenti';
+            btn.className = 'btn btn-danger';
+            liveInd.className = 'live-indicator active';
+            liveInd.textContent = 'Live';
+            document.getElementById('statStatus').textContent = 'Active';
+            document.getElementById('statStatus').style.color = 'var(--success)';
+            recognitionLoop();
+        } else {
+            btn.innerHTML = '&#9654; Mulai Pengenalan';
+            btn.className = 'btn btn-success';
+            liveInd.className = 'live-indicator inactive';
+            liveInd.textContent = 'Standby';
+            document.getElementById('statStatus').textContent = 'Standby';
+            document.getElementById('statStatus').style.color = 'var(--gray-500)';
+            hideResultOverlay();
+        }
+    }
+
+    async function recognitionLoop() {
+        if (!recognitionActive) return;
+        const video = document.getElementById('video');
+        const overlay = document.getElementById('overlay');
+        const ctx = overlay.getContext('2d');
+
+        const detections = await faceapi.detectAllFaces(video)
+            .withFaceLandmarks()
+            .withFaceDescriptors();
+
+        ctx.clearRect(0, 0, overlay.width, overlay.height);
+
+        if (detections.length > 0) {
+            detections.forEach(det => {
+                const bestMatch = faceMatcher.findBestMatch(det.descriptor);
+                const box = det.detection.box;
+                const isKnown = bestMatch.label !== 'unknown';
+
+                ctx.strokeStyle = isKnown ? '#10B981' : '#EF4444';
+                ctx.lineWidth = 2.5;
+                ctx.strokeRect(box.x, box.y, box.width, box.height);
+
+                // Label background
+                const labelText = isKnown ? bestMatch.label.split('|')[1] : 'Tidak Dikenal';
+                ctx.font = '600 13px Inter, sans-serif';
+                const textWidth = ctx.measureText(labelText).width;
+                ctx.fillStyle = isKnown ? '#10B981' : '#EF4444';
+                ctx.beginPath();
+                ctx.roundRect(box.x, box.y - 26, textWidth + 16, 24, 4);
+                ctx.fill();
+                ctx.fillStyle = '#FFFFFF';
+                ctx.fillText(labelText, box.x + 8, box.y - 9);
+
+                if (isKnown) {
+                    const parts = bestMatch.label.split('|');
+                    const nim = parts[0];
+                    const nama = parts[1];
+                    const confidence = (1 - bestMatch.distance);
+
+                    showResultOverlay(nama, nim, confidence);
+
+                    if (nim !== lastRecognizedNim) {
+                        lastRecognizedNim = nim;
+                        triggerAbsensi(nim, confidence);
+                    }
+                }
+            });
+        } else {
+            hideResultOverlay();
+        }
+
+        requestAnimationFrame(recognitionLoop);
+    }
+
+    async function triggerAbsensi(nim, confidence) {
+        try {
+            const res = await fetch('/api/face/absensi', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ nim: nim, confidence: confidence })
+            });
+            const result = await res.json();
+
+            // Show success badge
+            const badge = document.getElementById('successBadge');
+            badge.classList.add('show');
+            setTimeout(function() { badge.classList.remove('show'); }, 3000);
+
+            todayAbsensiCount++;
+            document.getElementById('statToday').textContent = todayAbsensiCount;
+
+            addToLog(nim, faceMatcher ? faceMatcher._labeledDescriptors.find(function(ld) {
+                return ld.label.startsWith(nim);
+            }) : null, confidence, 'Berhasil');
+
+            showToast('Absensi berhasil untuk NIM ' + nim + '!', 'success');
+
+            // Cooldown 10 seconds to prevent duplicates
+            if (cooldownTimer) clearTimeout(cooldownTimer);
+            cooldownTimer = setTimeout(function() {
+                lastRecognizedNim = null;
+            }, 10000);
+
+        } catch (err) {
+            showToast('Gagal mencatat absensi: ' + err.message, 'error');
+            addToLog(nim, null, confidence, 'Gagal');
+        }
+    }
+
+    function showResultOverlay(nama, nim, confidence) {
+        const overlay = document.getElementById('resultOverlay');
+        document.getElementById('resultName').textContent = nama;
+        document.getElementById('resultInfo').textContent = 'NIM: ' + nim;
+        document.getElementById('resultConfidence').textContent = (confidence * 100).toFixed(1) + '% match';
+        overlay.classList.add('show');
+
+        // Update avg confidence stat
+        document.getElementById('statAccuracy').textContent = (confidence * 100).toFixed(0) + '%';
+    }
+
+    function hideResultOverlay() {
+        document.getElementById('resultOverlay').classList.remove('show');
+    }
+
+    function addToLog(nim, labeledDesc, confidence, status) {
+        const tbody = document.getElementById('logTable');
+        const now = new Date();
+        const time = now.toLocaleTimeString('id-ID');
+        let nama = nim;
+        if (labeledDesc) {
+            nama = labeledDesc.label.split('|')[1] || nim;
+        }
+        const confPercent = (confidence * 100).toFixed(1);
+        const bc = confidence >= 0.7 ? 'badge-success' : (confidence >= 0.5 ? 'badge-warning' : 'badge-danger');
+        const sc = status === 'Berhasil' ? 'badge-success' : 'badge-danger';
+
+        const row = '<tr>' +
+            '<td>' + time + '</td>' +
+            '<td style="font-weight:500;">' + nama + '</td>' +
+            '<td><span class="badge ' + bc + '">' + confPercent + '%</span></td>' +
+            '<td><span class="badge ' + sc + '">' + status + '</span></td>' +
+        '</tr>';
+
+        if (recognitionLogs.length === 0) {
+            tbody.innerHTML = row;
+        } else {
+            tbody.insertAdjacentHTML('afterbegin', row);
+        }
+        recognitionLogs.push({ nim: nim, nama: nama, confidence: confidence, status: status, time: time });
+    }
+
+    function updateStatus(text, progress, type) {
+        var bar = document.getElementById('statusBar');
+        document.getElementById('statusText').textContent = text;
+        document.getElementById('progressFill').style.width = progress + '%';
+        bar.className = 'status-bar';
+        if (type) bar.classList.add(type);
+    }
+
+    function showToast(message, type) {
+        type = type || 'success';
+        var container = document.getElementById('toastContainer');
+        var toast = document.createElement('div');
+        toast.className = 'toast ' + type;
+        toast.textContent = message;
+        container.appendChild(toast);
+        setTimeout(function() { toast.remove(); }, 4000);
+    }
+</script>
+</body>
+</html>

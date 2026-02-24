@@ -72,6 +72,61 @@
         }
         .nav-links a:hover { color: var(--gray-700); background: var(--gray-100); }
         .nav-links a.active { color: var(--primary); background: var(--primary-light); }
+        .nav-links .logout-link:hover { background: var(--danger-light) !important; color: var(--danger) !important; }
+
+        /* Logout Modal */
+        .logout-overlay {
+            display: none; position: fixed; top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
+            z-index: 2000; justify-content: center; align-items: center;
+        }
+        .logout-overlay.show { display: flex; }
+        .logout-modal {
+            background: #fff; border-radius: 20px; width: 400px; max-width: 90vw;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.3);
+            animation: logoutBounce 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        @keyframes logoutBounce {
+            0% { opacity: 0; transform: scale(0.8) translateY(20px); }
+            100% { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        .logout-modal-body { padding: 36px 32px 24px; text-align: center; }
+        .logout-icon-wrap {
+            width: 72px; height: 72px; margin: 0 auto 20px;
+            background: linear-gradient(135deg, #fef2f2, #fee2e2);
+            border-radius: 50%; display: flex; align-items: center;
+            justify-content: center; font-size: 32px;
+            animation: logoutIconPulse 2s ease-in-out infinite;
+        }
+        @keyframes logoutIconPulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(239,68,68,0.2); }
+            50% { box-shadow: 0 0 0 12px rgba(239,68,68,0); }
+        }
+        .logout-modal-body h3 { font-size: 18px; font-weight: 700; color: #1a1a1a; margin-bottom: 8px; }
+        .logout-modal-body p { font-size: 14px; color: #888; line-height: 1.6; }
+        .logout-modal-actions { padding: 0 32px 28px; display: flex; gap: 12px; }
+        .btn-logout-cancel {
+            flex: 1; padding: 12px; border-radius: 12px;
+            border: 2px solid var(--gray-200); background: #fff;
+            font-size: 14px; font-weight: 600; color: var(--gray-600);
+            cursor: pointer; font-family: 'Inter', sans-serif; transition: all 0.2s;
+        }
+        .btn-logout-cancel:hover { border-color: var(--gray-300); background: var(--gray-50); }
+        .btn-logout-confirm {
+            flex: 1; padding: 12px; border-radius: 12px;
+            border: none; background: linear-gradient(135deg, #ef4444, #dc2626);
+            font-size: 14px; font-weight: 700; color: #fff;
+            cursor: pointer; font-family: 'Inter', sans-serif;
+            transition: all 0.2s; position: relative; overflow: hidden;
+        }
+        .btn-logout-confirm:hover {
+            transform: translateY(-2px); box-shadow: 0 6px 20px rgba(239,68,68,0.4);
+        }
+        .btn-logout-confirm:active { transform: translateY(0); box-shadow: none; }
+        .logout-timer { font-size: 12px; color: #bbb; margin-top: 16px; }
+        .logout-timer span { font-weight: 700; color: var(--danger); }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
         .container { max-width: 1320px; margin: 0 auto; padding: 28px 32px; }
         .page-header { margin-bottom: 28px; }
@@ -260,8 +315,25 @@
         <a href="/">Dashboard</a>
         <a href="/face-register" class="active">Registrasi Wajah</a>
         <a href="/face-absensi">Absensi Wajah</a>
+        <a href="#" onclick="showLogoutModal()" class="logout-link" style="color:var(--danger);margin-left:12px;position:relative;">&#128682; Logout</a>
     </div>
 </nav>
+
+<!-- LOGOUT MODAL -->
+<div class="logout-overlay" id="logoutModal">
+    <div class="logout-modal">
+        <div class="logout-modal-body">
+            <div class="logout-icon-wrap">&#128682;</div>
+            <h3>Keluar dari Sistem?</h3>
+            <p>Anda akan keluar dari akun dan perlu login kembali untuk mengakses halaman ini.</p>
+            <div class="logout-timer" id="logoutTimer" style="display:none;">Otomatis batal dalam <span id="logoutCountdown">10</span> detik</div>
+        </div>
+        <div class="logout-modal-actions">
+            <button class="btn-logout-cancel" onclick="hideLogoutModal()">Batal</button>
+            <button class="btn-logout-confirm" onclick="doLogout()">&#128682; Ya, Logout</button>
+        </div>
+    </div>
+</div>
 
 <div class="toast-container" id="toastContainer"></div>
 
@@ -891,6 +963,37 @@
         c.appendChild(t);
         setTimeout(() => t.remove(), 4000);
     }
+
+    // ===== LOGOUT MODAL =====
+    let logoutTimer = null;
+    function showLogoutModal() {
+        document.getElementById('logoutModal').classList.add('show');
+        let seconds = 10;
+        const timerEl = document.getElementById('logoutTimer');
+        const countdownEl = document.getElementById('logoutCountdown');
+        timerEl.style.display = 'block';
+        countdownEl.textContent = seconds;
+        clearInterval(logoutTimer);
+        logoutTimer = setInterval(() => {
+            seconds--;
+            countdownEl.textContent = seconds;
+            if (seconds <= 0) { clearInterval(logoutTimer); hideLogoutModal(); }
+        }, 1000);
+    }
+    function hideLogoutModal() {
+        document.getElementById('logoutModal').classList.remove('show');
+        clearInterval(logoutTimer);
+    }
+    function doLogout() {
+        clearInterval(logoutTimer);
+        const btn = document.querySelector('.btn-logout-confirm');
+        btn.innerHTML = '<div style="display:inline-block;width:18px;height:18px;border:2px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:spin 0.6s linear infinite;vertical-align:middle;"></div> Keluar...';
+        btn.style.pointerEvents = 'none';
+        setTimeout(() => { window.location.href = '/logout'; }, 600);
+    }
+    document.getElementById('logoutModal').addEventListener('click', function(e) {
+        if (e.target === this) hideLogoutModal();
+    });
 </script>
 </body>
 </html>

@@ -1036,6 +1036,171 @@
             background: #ef4444;
             color: #fff;
         }
+
+        /* ===== LOGOUT BUTTON ===== */
+        .nav-item.logout-btn {
+            color: rgba(255,120,120,0.8) !important;
+            margin-top: 4px;
+            transition: all 0.3s ease;
+        }
+        .nav-item.logout-btn:hover {
+            background: rgba(239,68,68,0.15) !important;
+            color: #ff6b6b !important;
+        }
+
+        /* ===== SIDEBAR USER PROFILE ===== */
+        .user-profile-mini {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+            padding: 10px 12px;
+            background: rgba(255,255,255,0.06);
+            border-radius: 10px;
+        }
+        .user-avatar-sm {
+            width: 34px; height: 34px;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 14px; font-weight: 700; color: #fff;
+        }
+        .user-name-sm { font-size: 13px; font-weight: 600; color: #fff; }
+        .user-role-sm { font-size: 11px; color: rgba(255,255,255,0.4); }
+
+        /* ===== TOPBAR USER DROPDOWN ===== */
+        .user-dropdown-wrapper { position: relative; }
+        .topbar-user {
+            display: flex; align-items: center; gap: 8px;
+            padding: 6px 12px; border-radius: 10px;
+            cursor: pointer; transition: all 0.2s;
+            border: 1px solid transparent;
+        }
+        .topbar-user:hover { background: #f5f5f5; border-color: #e5e5e5; }
+        .topbar-avatar {
+            width: 32px; height: 32px;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 13px; font-weight: 700; color: #fff;
+        }
+        .topbar-username { font-size: 13px; font-weight: 600; color: #333; }
+        .dropdown-arrow { font-size: 10px; color: #999; transition: transform 0.2s; }
+        .topbar-user.active .dropdown-arrow { transform: rotate(180deg); }
+
+        .user-dropdown {
+            position: absolute; top: calc(100% + 8px); right: 0;
+            width: 240px; background: #fff;
+            border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+            border: 1px solid #e5e5e5;
+            opacity: 0; visibility: hidden; transform: translateY(-8px);
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 200;
+        }
+        .user-dropdown.show {
+            opacity: 1; visibility: visible; transform: translateY(0);
+        }
+        .dropdown-header {
+            padding: 16px; display: flex; align-items: center; gap: 12px;
+        }
+        .dropdown-avatar {
+            width: 40px; height: 40px;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 16px; font-weight: 700; color: #fff;
+        }
+        .dropdown-name { font-size: 14px; font-weight: 700; color: #1a1a1a; }
+        .dropdown-role { font-size: 12px; color: #999; }
+        .dropdown-divider { height: 1px; background: #f0f0f0; margin: 0; }
+        .dropdown-item {
+            display: flex; align-items: center; gap: 10px;
+            padding: 10px 16px; font-size: 13px; font-weight: 500;
+            color: #555; text-decoration: none; transition: all 0.15s;
+        }
+        .dropdown-item:hover { background: #f8f8f8; color: #1a1a1a; }
+        .dropdown-item span { font-size: 16px; width: 20px; text-align: center; }
+        .dropdown-item.logout { color: #ef4444; }
+        .dropdown-item.logout:hover { background: #fef2f2; }
+
+        /* ===== LOGOUT MODAL ===== */
+        .logout-overlay {
+            display: none; position: fixed; top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
+            z-index: 2000; justify-content: center; align-items: center;
+        }
+        .logout-overlay.show { display: flex; }
+        .logout-modal {
+            background: #fff; border-radius: 20px; width: 400px; max-width: 90vw;
+            padding: 0; box-shadow: 0 25px 60px rgba(0,0,0,0.3);
+            animation: logoutBounce 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        @keyframes logoutBounce {
+            0% { opacity: 0; transform: scale(0.8) translateY(20px); }
+            100% { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        .logout-modal-body {
+            padding: 36px 32px 24px; text-align: center;
+        }
+        .logout-icon-wrap {
+            width: 72px; height: 72px; margin: 0 auto 20px;
+            background: linear-gradient(135deg, #fef2f2, #fee2e2);
+            border-radius: 50%; display: flex; align-items: center;
+            justify-content: center; font-size: 32px;
+            animation: logoutIconPulse 2s ease-in-out infinite;
+        }
+        @keyframes logoutIconPulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(239,68,68,0.2); }
+            50% { box-shadow: 0 0 0 12px rgba(239,68,68,0); }
+        }
+        .logout-modal-body h3 {
+            font-size: 18px; font-weight: 700; color: #1a1a1a;
+            margin-bottom: 8px;
+        }
+        .logout-modal-body p {
+            font-size: 14px; color: #888; line-height: 1.6;
+        }
+        .logout-modal-actions {
+            padding: 0 32px 28px; display: flex; gap: 12px;
+        }
+        .btn-logout-cancel {
+            flex: 1; padding: 12px; border-radius: 12px;
+            border: 2px solid #e5e5e5; background: #fff;
+            font-size: 14px; font-weight: 600; color: #666;
+            cursor: pointer; font-family: 'Inter', sans-serif;
+            transition: all 0.2s;
+        }
+        .btn-logout-cancel:hover {
+            border-color: #ccc; background: #f8f8f8;
+        }
+        .btn-logout-confirm {
+            flex: 1; padding: 12px; border-radius: 12px;
+            border: none; background: linear-gradient(135deg, #ef4444, #dc2626);
+            font-size: 14px; font-weight: 700; color: #fff;
+            cursor: pointer; font-family: 'Inter', sans-serif;
+            transition: all 0.2s; position: relative; overflow: hidden;
+        }
+        .btn-logout-confirm::before {
+            content: ''; position: absolute; top: 0; left: -100%;
+            width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.4s;
+        }
+        .btn-logout-confirm:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(239,68,68,0.4);
+        }
+        .btn-logout-confirm:hover::before { left: 100%; }
+        .btn-logout-confirm:active {
+            transform: translateY(0); box-shadow: none;
+        }
+        .logout-timer {
+            font-size: 12px; color: #bbb; margin-top: 16px;
+        }
+        .logout-timer span {
+            font-weight: 700; color: #ef4444;
+        }
     </style>
 </head>
 <body>
@@ -1113,6 +1278,13 @@
             </a>
         </nav>
         <div class="sidebar-footer">
+            <div class="user-profile-mini">
+                <div class="user-avatar-sm">A</div>
+                <div>
+                    <div class="user-name-sm" th:text="${username} ?: 'Admin'">Admin</div>
+                    <div class="user-role-sm">Administrator</div>
+                </div>
+            </div>
             <div class="version">Absensi Ruangan TU v2.0</div>
         </div>
     </aside>
@@ -1136,6 +1308,27 @@
                     <span>LIVE</span>
                 </div>
                 <div class="topbar-btn" onclick="refreshData()" title="Refresh">&#8635;</div>
+                <div class="user-dropdown-wrapper">
+                    <div class="topbar-user" onclick="toggleUserMenu()">
+                        <div class="topbar-avatar">A</div>
+                        <span class="topbar-username" th:text="${username} ?: 'Admin'">Admin</span>
+                        <span class="dropdown-arrow">&#9662;</span>
+                    </div>
+                    <div class="user-dropdown" id="userDropdown">
+                        <div class="dropdown-header">
+                            <div class="dropdown-avatar">A</div>
+                            <div>
+                                <div class="dropdown-name" th:text="${username} ?: 'Admin'">Admin</div>
+                                <div class="dropdown-role">Administrator</div>
+                            </div>
+                        </div>
+                        <div class="dropdown-divider"></div>
+                        <a class="dropdown-item" href="/"><span>&#127968;</span> Dashboard</a>
+                        <a class="dropdown-item" href="#" onclick="refreshData()"><span>&#8635;</span> Refresh Data</a>
+                        <div class="dropdown-divider"></div>
+                        <a class="dropdown-item logout" href="#" onclick="showLogoutModal()"><span>&#128682;</span> Logout</a>
+                    </div>
+                </div>
             </div>
         </header>
 
@@ -1379,6 +1572,22 @@
             <div class="modal-footer">
                 <button class="btn-cancel" onclick="closeModal('modalTambah')">Batal</button>
                 <button class="btn-submit" id="btnSubmitAnggota" onclick="submitAnggota()">Simpan</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- LOGOUT MODAL -->
+    <div class="logout-overlay" id="logoutModal">
+        <div class="logout-modal">
+            <div class="logout-modal-body">
+                <div class="logout-icon-wrap">&#128682;</div>
+                <h3>Keluar dari Sistem?</h3>
+                <p>Anda akan keluar dari akun dan perlu login kembali untuk mengakses dashboard.</p>
+                <div class="logout-timer" id="logoutTimer" style="display:none;">Otomatis batal dalam <span id="logoutCountdown">5</span> detik</div>
+            </div>
+            <div class="logout-modal-actions">
+                <button class="btn-logout-cancel" onclick="hideLogoutModal()">Batal</button>
+                <button class="btn-logout-confirm" onclick="doLogout()">&#128682; Ya, Logout</button>
             </div>
         </div>
     </div>
@@ -1649,6 +1858,59 @@
                     this.classList.remove('show');
                 }
             });
+        });
+
+        // ===== LOGOUT MODAL =====
+        let logoutTimer = null;
+        function showLogoutModal() {
+            document.getElementById('logoutModal').classList.add('show');
+            closeUserMenu();
+            // Auto-cancel countdown
+            let seconds = 10;
+            const timerEl = document.getElementById('logoutTimer');
+            const countdownEl = document.getElementById('logoutCountdown');
+            timerEl.style.display = 'block';
+            countdownEl.textContent = seconds;
+            clearInterval(logoutTimer);
+            logoutTimer = setInterval(() => {
+                seconds--;
+                countdownEl.textContent = seconds;
+                if (seconds <= 0) {
+                    clearInterval(logoutTimer);
+                    hideLogoutModal();
+                }
+            }, 1000);
+        }
+        function hideLogoutModal() {
+            document.getElementById('logoutModal').classList.remove('show');
+            clearInterval(logoutTimer);
+        }
+        function doLogout() {
+            clearInterval(logoutTimer);
+            const btn = document.querySelector('.btn-logout-confirm');
+            btn.innerHTML = '<div style="display:inline-block;width:18px;height:18px;border:2px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:spin 0.6s linear infinite;vertical-align:middle;"></div> Keluar...';
+            btn.style.pointerEvents = 'none';
+            setTimeout(() => { window.location.href = '/logout'; }, 600);
+        }
+        document.getElementById('logoutModal').addEventListener('click', function(e) {
+            if (e.target === this) hideLogoutModal();
+        });
+
+        // ===== USER DROPDOWN =====
+        function toggleUserMenu() {
+            const dropdown = document.getElementById('userDropdown');
+            const trigger = document.querySelector('.topbar-user');
+            dropdown.classList.toggle('show');
+            trigger.classList.toggle('active');
+        }
+        function closeUserMenu() {
+            document.getElementById('userDropdown').classList.remove('show');
+            document.querySelector('.topbar-user').classList.remove('active');
+        }
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.user-dropdown-wrapper')) {
+                closeUserMenu();
+            }
         });
     </script>
 
